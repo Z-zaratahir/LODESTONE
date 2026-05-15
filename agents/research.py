@@ -149,7 +149,7 @@ def run_research_agent(state: AgentState) -> dict[str, Any]:
         "research_attempts": research_attempts,
         # Store structured summary in validator_notes temporarily
         # so Synthesis Agent can access it — overwritten by Validator later
-        "_research_summary": structured_summary,
+        "assembled_research": structured_summary,
     }
 
     logger.info(

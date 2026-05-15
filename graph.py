@@ -92,9 +92,10 @@ def normalizer_node(state: AgentState) -> dict:
         "source_conflict":    False,
         "validation_result":  "",
         "validator_notes":    None,
+        "research_attempts":  0,        # CRITICAL: reset per query, not per session
         "final_response":     "",
         "suggested_followups": [],
-        "_research_summary":  {},
+        "assembled_research":  {},
     }
 
 

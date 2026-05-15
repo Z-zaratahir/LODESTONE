@@ -75,7 +75,7 @@ def run_validator_agent(state: AgentState) -> dict[str, Any]:
     entity_memory     = state.get("entity_memory") or {}
     sub_intents       = state.get("sub_intents") or []
     research_results  = state.get("research_results") or []
-    research_summary  = state.get("_research_summary") or {}
+    research_summary  = state.get("assembled_research") or {}
 
     company = entity_memory.get("company_name") or "Unknown Company"
 

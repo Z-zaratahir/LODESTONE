@@ -124,7 +124,7 @@ def get_initial_state() -> dict:
         "validator_notes": None,
         "final_response": "",
         "suggested_followups": [],
-        "_research_summary": {},
+        "assembled_research": {},
     }
 
 

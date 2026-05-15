@@ -70,7 +70,7 @@ def run_synthesis_agent(state: AgentState) -> dict[str, Any]:
     current_turn     = state.get("current_turn", 1)
     entity_memory    = state.get("entity_memory") or {}
     sub_intents      = state.get("sub_intents") or []
-    research_summary = state.get("_research_summary") or {}
+    research_summary = state.get("assembled_research") or {}
     validator_notes  = state.get("validator_notes")
     source_conflict  = state.get("source_conflict", False)
     confidence_score = state.get("confidence_score", 0.0)
