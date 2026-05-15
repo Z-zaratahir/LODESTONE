@@ -35,11 +35,11 @@ GROQ_API_KEY   = os.getenv("GROQ_API_KEY", "")     # Groq   — free tier, fast 
 
 MODELS = {
     # Primary reasoning model — used by Clarity, Validator, Synthesis agents
-    # Using Groq's free-tier llama3-8b-8192 — no credit card required
-    "primary": "llama3-8b-8192",
+    # llama3-8b-8192 was decommissioned by Groq — replaced with current free-tier model
+    "primary": "llama-3.1-8b-instant",
 
     # Research agent model — same free Groq model
-    "research": "llama3-8b-8192",
+    "research": "llama-3.1-8b-instant",
 
     # Normalization — HuggingFace model, runs locally, no API cost
     # Set to None to skip HF and use rule-based cleaning only
