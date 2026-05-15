@@ -139,22 +139,18 @@ def run_synthesis_agent(state: AgentState) -> dict[str, Any]:
 
 def _extract_followups(raw_response: str) -> tuple[str, list[str]]:
     """
-    Extract the ```followups ... ``` block from the LLM response.
+    Extract the followups block from the LLM response block (either ```followups or ```json or just ```).
 
     Returns:
         (clean_response_text, list_of_followup_strings)
-
-    The LLM is instructed to put follow-ups in a ```followups ... ``` block.
-    We extract it, parse the JSON array inside, and strip it from the response.
     """
     pattern = re.compile(
-        r'```followups\s*\n(.*?)\n```',
+        r'```(?:followups|json)?\s*\n(.*?)\n```',
         re.DOTALL | re.IGNORECASE,
     )
     match = pattern.search(raw_response)
 
     if not match:
-        # No block found — return raw response with no follow-ups
         return raw_response.strip(), []
 
     followups_raw = match.group(1).strip()
@@ -165,7 +161,6 @@ def _extract_followups(raw_response: str) -> tuple[str, list[str]]:
         if isinstance(followups, list):
             return clean_response, [str(f) for f in followups[:3]]
     except json.JSONDecodeError:
-        # Parse failed — just skip follow-ups
         logger.warning("[SYNTHESIS] Follow-up JSON parse failed")
 
     return clean_response, []

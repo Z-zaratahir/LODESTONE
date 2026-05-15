@@ -182,7 +182,7 @@ def _apply_misspelling_corrections(text: str) -> str:
 # Pronoun / vague reference patterns — signal "same company as before"
 _PRONOUN_RE = re.compile(
     r'\b(they|them|their|theirs|it|its|the company|that company|'
-    r'the firm|the organization|the brand|the startup)\b',
+    r'the firm|the organization|the brand|the startup|he|him|his|she|her|hers)\b',
     re.IGNORECASE,
 )
 
