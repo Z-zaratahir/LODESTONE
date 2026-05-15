@@ -76,7 +76,7 @@ def run_synthesis_agent(state: AgentState) -> dict[str, Any]:
     confidence_score = state.get("confidence_score", 0.0)
     conversation_history = state.get("conversation_history") or []
 
-    company = entity_memory.get("company_name", "the company")
+    company = entity_memory.get("company_name") or "the company"
     company_search_str = get_company_for_search(entity_memory) or company
 
     # Get original query from history

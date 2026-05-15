@@ -77,7 +77,7 @@ def run_validator_agent(state: AgentState) -> dict[str, Any]:
     research_results  = state.get("research_results") or []
     research_summary  = state.get("_research_summary") or {}
 
-    company = entity_memory.get("company_name", "Unknown Company")
+    company = entity_memory.get("company_name") or "Unknown Company"
 
     # Get original query from conversation history
     history = state.get("conversation_history") or []
@@ -89,7 +89,7 @@ def run_validator_agent(state: AgentState) -> dict[str, Any]:
     )
 
     # ── Hard cap check: attempt 3 always passes ───────────────────────────────
-    if research_attempts >= MAX_RESEARCH_RETRIES:
+    if research_attempts > MAX_RESEARCH_RETRIES:
         logger.info(
             f"[VALIDATOR] Max attempts ({MAX_RESEARCH_RETRIES}) reached — "
             "forcing sufficient to break loop"
