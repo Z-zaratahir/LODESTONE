@@ -117,10 +117,12 @@ Get your keys:
 - **Groq:** [console.groq.com](https://console.groq.com) → Create API Key (free, instant)
 - **Tavily:** [tavily.com](https://tavily.com) → Sign Up → API Keys (free)
 
-### 5. Run
+### 5. Run (on terminal)
 
 ```bash
-python main.py
+\LODESTONE> uvicorn api:app --reload --port 8000
+
+\LODESTONE\frontend> npm run dev
 ```
 
 **Options:**
@@ -132,6 +134,12 @@ python main.py --thread-id ID   # resume a specific past conversation
 ```
 
 ---
+
+### 5. Run (on localhost)
+
+```bash
+python main.py
+```
 
 ## Example Session
 
