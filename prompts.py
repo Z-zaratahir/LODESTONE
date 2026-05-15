@@ -17,13 +17,14 @@ Reviewer note:
 
 from typing import Optional
 from config import RESEARCH_INTENTS, MAX_HISTORY_MESSAGES
+from state import EntityMemory
 
 
 # ── CLARITY AGENT ─────────────────────────────────────────────────────────────
 
 def clarity_prompt(
     normalized_input: str,
-    entity_memory: dict,
+    entity_memory: EntityMemory,
     conversation_history: list[dict],
     current_turn: int,
 ) -> str:
