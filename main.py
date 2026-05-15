@@ -34,7 +34,7 @@ import argparse
 import logging
 import sys
 import uuid
-from typing import Optional
+from typing import Any, Optional
 
 from langgraph.types import Command
 
@@ -218,7 +218,7 @@ def run_conversation_turn(
     return final_response, suggested_followups
 
 
-def _extract_interrupt_value(exc: Exception) -> any:
+def _extract_interrupt_value(exc: Exception) -> Any:
     """
     Extract the interrupt value from a GraphInterrupt exception.
     LangGraph stores it differently across versions — handle both.
@@ -246,7 +246,7 @@ def main() -> None:
     # Disable HF model if requested (faster startup for demos)
     if args.no_hf:
         import config
-        config.MODELS["normalizer_hf"] = None
+        config.MODELS["normalizer_hf"] = None  # type: ignore[assignment]
         logger.info("HuggingFace spell correction disabled")
 
     print_banner()
