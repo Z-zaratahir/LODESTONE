@@ -1,0 +1,52 @@
+# ── SECRETS — never commit these ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example          # .env.example IS committed — it's the template, no real keys
+
+# ── Python virtual environment ────────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── Python cache ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+
+# ── Package / build artifacts ─────────────────────────────────────────────────
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# ── HuggingFace model cache (can be 500MB+) ───────────────────────────────────
+.cache/
+~/.cache/huggingface/
+huggingface/
+
+# ── LangGraph / LangChain local state ────────────────────────────────────────
+.langgraph/
+langgraph.json
+*.db                   # SQLite checkpointer files if you switch from MemorySaver
+
+# ── IDE / editor files ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Test artifacts ────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/

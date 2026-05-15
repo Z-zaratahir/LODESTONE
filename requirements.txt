@@ -1,0 +1,23 @@
+# LODESTONE — requirements.txt
+# Install with: pip install -r requirements.txt
+
+# ── Core framework ────────────────────────────────────────────────────────────
+langgraph>=0.2.0
+langchain-core>=0.2.0
+
+# ── LLM providers (install the one you're using) ─────────────────────────────
+langchain-groq>=0.1.0          # Groq — FREE tier, recommended for students
+# langchain-openai>=0.1.0      # OpenAI — paid, uncomment if using
+# langchain-anthropic>=0.1.0   # Anthropic — paid, uncomment if using
+
+# ── Search tool ───────────────────────────────────────────────────────────────
+tavily-python>=0.3.0           # Tavily search — FREE tier available
+
+# ── Environment / config ──────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+
+# ── Optional: HuggingFace spell correction ────────────────────────────────────
+# Only needed if you want the normalizer's Layer 2 (spell correction model).
+# Downloads ~500MB model on first run. Skip with: python main.py --no-hf
+# transformers>=4.40.0
+# torch>=2.0.0                 # or: pip install torch --index-url https://download.pytorch.org/whl/cpu
