@@ -120,7 +120,7 @@ def run_clarity_agent(state: AgentState) -> dict[str, Any]:
 
     try:
         response = llm.invoke([HumanMessage(content=prompt_text)])
-        raw_output = response.content.strip()
+        raw_output = str(response.content).strip()
         logger.debug(f"[CLARITY] Raw LLM response: {raw_output[:300]}")
     except Exception as e:
         logger.error(f"[CLARITY] LLM call failed: {e}")

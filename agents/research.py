@@ -128,7 +128,7 @@ def run_research_agent(state: AgentState) -> dict[str, Any]:
             SystemMessage(content=research_system_prompt()),
             HumanMessage(content=assembly_prompt),
         ])
-        raw_output = response.content.strip()
+        raw_output = str(response.content).strip()
         logger.debug(f"[RESEARCH] LLM assembly response: {raw_output[:400]}")
     except Exception as e:
         logger.error(f"[RESEARCH] LLM assembly failed: {e}")

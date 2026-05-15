@@ -107,7 +107,7 @@ def run_synthesis_agent(state: AgentState) -> dict[str, Any]:
             SystemMessage(content=synthesis_system_prompt()),
             HumanMessage(content=prompt_text),
         ])
-        raw_output = response.content.strip()
+        raw_output = str(response.content).strip()
         logger.debug(f"[SYNTHESIS] Raw output length: {len(raw_output)} chars")
     except Exception as e:
         logger.error(f"[SYNTHESIS] LLM call failed: {e}")
