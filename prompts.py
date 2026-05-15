@@ -340,7 +340,9 @@ Write a complete, well-structured response to the user's question.
 Format guidelines:
   - Use a brief intro sentence before diving into sections.
   - Use ## headers for each major topic (News, Financials, Leadership, Competitors)
-    but only include sections for intents that actually have data.
+    but ONLY include sections for intents that were explicitly searched and listed 
+    in the "Topics covered" field above. Never generate content for intents 
+    that were not searched, even if you have prior knowledge about them.
   - End with a "### What I couldn't find" section IF there are real gaps.
   - Finish with 2-3 suggested follow-up questions the user might want to ask next.
     Format them as a JSON block at the very end like this:
@@ -370,7 +372,7 @@ def _format_history(history: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def _format_entity_memory(entity_memory: dict) -> str:
+def _format_entity_memory(entity_memory: EntityMemory) -> str:
     """Format entity memory dict as readable text."""
     if not entity_memory or not entity_memory.get("company_name"):
         return "No entity confirmed yet."

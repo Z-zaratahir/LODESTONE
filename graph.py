@@ -40,6 +40,7 @@ import logging
 from typing import Literal
 
 from langgraph.graph import StateGraph, START, END
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import interrupt
 
@@ -204,7 +205,7 @@ def route_after_human_feedback(state: AgentState) -> Literal["normalizer_node"]:
 
 # ── Graph construction ────────────────────────────────────────────────────────
 
-def build_graph() -> StateGraph:
+def build_graph() -> CompiledStateGraph:
     """
     Construct the LangGraph StateGraph.
     Returns the compiled graph with MemorySaver checkpointer.
@@ -214,7 +215,7 @@ def build_graph() -> StateGraph:
       2. Multi-turn conversations (state survives between top-level calls)
       3. Debugging (you can inspect state at any checkpoint)
     """
-    builder = StateGraph(AgentState)
+    builder = StateGraph(AgentState)  # type: ignore[type-var]  # Pyrefly false positive — Annotated[list, operator.add] is valid LangGraph reducer syntax
 
     # ── Add nodes ─────────────────────────────────────────────────────────────
     builder.add_node("normalizer_node",    normalizer_node)

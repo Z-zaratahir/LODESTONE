@@ -137,17 +137,37 @@ def run_clarity_agent(state: AgentState) -> dict[str, Any]:
 
     # ── Step 5: Override: if entity memory has a company but LLM says unclear,
     #    double-check — the extractor is more reliable for company detection.
-    if (
+# ── Step 5: Hard guard — no company means always needs clarification ──────
+    company_name = memory_to_use.get("company_name")
+
+    if not company_name:
+        parsed["clarity_status"] = "needs_clarification"
+        if not parsed.get("clarification_question"):
+            parsed["clarification_question"] = "Which company are you asking about?"
+
+    # Override: if entity memory has a company but LLM says unclear,
+    # double-check — the extractor is more reliable for company detection.
+    elif (
         parsed["clarity_status"] == "needs_clarification"
-        and memory_to_use.get("company_name")
+        and company_name
     ):
+        logger.info(
+            "[CLARITY] LLM flagged unclear but entity memory has a company — "
+            f"checking if query is truly ambiguous..."
+        )
+        reasoning = parsed.get("reasoning", "").lower()
+        company_lower = company_name.lower()
+        if company_lower in reasoning or "found" in reasoning or "memory" in reasoning:
+            logger.info("[CLARITY] Memory override: treating as clear")
+            parsed["clarity_status"] = "clear"
+            parsed["clarification_question"] = None
         logger.info(
             "[CLARITY] LLM flagged unclear but entity memory has a company — "
             f"checking if query is truly ambiguous..."
         )
         # Only override if LLM's own reasoning mentions the company was found
         reasoning = parsed.get("reasoning", "").lower()
-        company_lower = memory_to_use["company_name"].lower()
+        company_lower = company_name.lower()
         if company_lower in reasoning or "found" in reasoning or "memory" in reasoning:
             logger.info("[CLARITY] Memory override: treating as clear")
             parsed["clarity_status"] = "clear"

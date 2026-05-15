@@ -131,6 +131,54 @@ _SUFFIX_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Manual misspelling corrections for company names.
+# These catch the cases HuggingFace spell correction would handle
+# if the model is available, but provides a deterministic fallback.
+# Add entries as you encounter them in real usage.
+COMPANY_MISSPELLINGS: dict[str, str] = {
+    # Google variants
+    "gooogle": "google", "gogle": "google", "googl": "google",
+    "goggle": "google", "gooogel": "google",
+    # Apple variants
+    "aplle": "apple", "aple": "apple", "appel": "apple",
+    # Amazon variants
+    "amazn": "amazon", "amazom": "amazon", "amzon": "amazon",
+    # Microsoft variants
+    "microsft": "microsoft", "microsfot": "microsoft", "micorsoft": "microsoft",
+    # Tesla variants
+    "tesle": "tesla", "teslla": "tesla",
+    # Nvidia variants
+    "nvida": "nvidia", "nvidea": "nvidia",
+    # Meta / Facebook
+    "facbook": "facebook", "facebok": "facebook",
+    # Netflix
+    "netflex": "netflix", "netlix": "netflix",
+    # General
+    "palantir": "palantir",  # often misspelled as "palantier"
+    "palantier": "palantir",
+}
+
+
+def _apply_misspelling_corrections(text: str) -> str:
+    """
+    Apply manual misspelling corrections to the text before entity extraction.
+    Operates on individual tokens to avoid corrupting surrounding context.
+    Only corrects tokens that exactly match a known misspelling.
+    """
+    tokens = text.split()
+    corrected = []
+    for token in tokens:
+        clean_token = token.lower().strip("'\".,!?")
+        if clean_token in COMPANY_MISSPELLINGS:
+            # Preserve original capitalisation style if present
+            correction = COMPANY_MISSPELLINGS[clean_token]
+            if token[0].isupper():
+                correction = correction.title()
+            corrected.append(correction)
+        else:
+            corrected.append(token)
+    return " ".join(corrected)
+
 # Pronoun / vague reference patterns — signal "same company as before"
 _PRONOUN_RE = re.compile(
     r'\b(they|them|their|theirs|it|its|the company|that company|'
@@ -195,12 +243,27 @@ def _extract_company_candidates(text: str) -> list[str]:
     # 1. Proper noun extraction
     for match in _PROPER_NOUN_RE.finditer(text):
         cand = match.group(1).strip()
-        # Filter out common false positives
-        if cand.lower() not in {
-            'tell', 'what', 'who', 'how', 'when', 'where', 'which',
-            'ceo', 'cfo', 'coo', 'the', 'a', 'an', 'is', 'are',
+        # Filter out common false positives — sentence starters, question words,
+        # business jargon, and any word that appears in KNOWN_COMPANIES stoplist.
+        # "Now tell me about Ford" → "Now" must never win over "Ford".
+        _STOPWORDS = {
+            # Sentence starters / transitional words
+            'now', 'tell', 'show', 'give', 'find', 'get', 'look',
+            'also', 'just', 'still', 'then', 'next', 'last', 'first',
+            'please', 'can', 'could', 'would', 'should', 'maybe',
+            'instead', 'rather', 'actually', 'basically', 'switch', 'back',
+            # Question words
+            'what', 'who', 'how', 'when', 'where', 'which', 'why',
+            # Common nouns mistaken as proper
+            'ceo', 'cfo', 'coo', 'cto', 'vp', 'president',
+            'the', 'a', 'an', 'is', 'are', 'was', 'were',
             'recent', 'latest', 'new', 'old', 'big', 'small',
-        } and len(cand) > 2:
+            'top', 'best', 'worst', 'main', 'key', 'major',
+            'news', 'stock', 'market', 'company', 'firm',
+            'info', 'data', 'report', 'revenue', 'earnings',
+            'about', 'more', 'some', 'any', 'all', 'no',
+        }
+        if cand.lower() not in _STOPWORDS and len(cand) > 2 and not (cand.isupper() and len(cand) > 6):
             candidates.append(cand)
 
     # 2. Lowercase known company names
@@ -262,7 +325,10 @@ def extract_entity(
         Updated EntityMemory dict (safe to merge into state directly)
     """
     has_pronoun = _has_pronoun_reference(normalized_input)
-    candidates  = _extract_company_candidates(normalized_input)
+    # Apply manual misspelling corrections before candidate extraction
+    # so "gooogle" → "google" before the regex runs
+    corrected_input = _apply_misspelling_corrections(normalized_input)
+    candidates  = _extract_company_candidates(corrected_input)
 
     logger.debug(
         f"entity_store: input={repr(normalized_input[:60])} | "
