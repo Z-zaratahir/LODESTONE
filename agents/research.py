@@ -130,12 +130,14 @@ def run_research_agent(state: AgentState) -> dict[str, Any]:
         ])
         raw_output = str(response.content).strip()
         logger.debug(f"[RESEARCH] LLM assembly response: {raw_output[:400]}")
+        structured_summary = _parse_research_response(raw_output)
     except Exception as e:
         logger.error(f"[RESEARCH] LLM assembly failed: {e}")
-        # Fallback: use raw Tavily summaries directly
-        raw_output = _build_fallback_summary(raw_results)
+        # Fallback: build structured summary directly from raw Tavily results.
+        # _build_fallback_summary already returns the correct dict shape,
+        # so we don't need to pass it through the string parser.
+        structured_summary = _build_fallback_summary(raw_results)
 
-    structured_summary = _parse_research_response(raw_output)
 
     # Enrich raw_results with the structured summary for downstream agents
     # We keep both: raw_results for the Validator (needs raw_hits),
