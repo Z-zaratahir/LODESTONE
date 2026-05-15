@@ -27,7 +27,7 @@ import asyncio
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Literal, Optional
 
 from tavily import TavilyClient
 
@@ -66,7 +66,7 @@ def _get_client() -> TavilyClient:
 # "finance" → earnings reports, stock data, analyst coverage
 # "general" → broad web results (leadership bios, competitor analysis)
 
-INTENT_TOPIC_MAP = {
+INTENT_TOPIC_MAP: dict[str, Literal["finance", "general", "news"]] = {
     "news":        "news",
     "financials":  "finance",
     "leadership":  "general",
@@ -179,7 +179,24 @@ def _detect_conflict(results: list[dict]) -> bool:
             if raw:
                 try:
                     val = float(raw.replace(",", ""))
-                    all_figures.append(val)
+                    # Filter to business-relevant magnitude range only.
+                    # Stock prices (~$1–$5000) and tiny ratios (<1) cause
+                    # false positives when compared against revenue figures ($B).
+                    # We only want to compare figures that could plausibly be
+                    # the same metric — revenue, earnings, market cap (all > 1B).
+                    # Percentages (group 2) are excluded from this filter
+                    # since they come from a separate capture group.
+                    if match.group(1) is not None:
+                        # Dollar figure — only keep if >= 100 (i.e., plausibly
+                        # a revenue/market cap figure, not a stock price or ratio).
+                        # Stock prices: $1–$5000 → filtered when no B/M suffix
+                        # Revenue figures: always in the hundreds of billions
+                        if val >= 100.0:
+                            all_figures.append(val)
+                    else:
+                        # Percentage — keep as-is but only for conflict check
+                        # if multiple percentage figures appear
+                        pass
                 except ValueError:
                     pass
 
@@ -289,9 +306,7 @@ async def _search_all_async(
     Run all intent searches in parallel using asyncio.
     Each search is run in a thread (Tavily client is sync) via run_in_executor.
     """
-    # Use get_running_loop() — correct for Python 3.10+ inside an async function.
-    # get_event_loop() is deprecated in async contexts from Python 3.10 onward.
-    loop = asyncio.get_running_loop()
+    loop = asyncio.get_event_loop()
 
     tasks = [
         loop.run_in_executor(
@@ -361,16 +376,19 @@ def run_research(
         intents = RESEARCH_INTENTS
         logger.info("search: no intents specified, defaulting to all")
 
-    # Always create a fresh event loop — avoids DeprecationWarning from
-    # asyncio.get_event_loop() on Python 3.12 and RuntimeError when called
-    # from a non-main thread (which LangGraph nodes may run in).
-    loop = asyncio.new_event_loop()
+    # Run async in a new event loop (safe to call from sync LangGraph node)
     try:
-        results = loop.run_until_complete(
-            _search_all_async(company, intents, extra_context)
-        )
-    finally:
-        loop.close()
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    results = loop.run_until_complete(
+        _search_all_async(company, intents, extra_context)
+    )
 
     # Overall confidence: average of per-intent scores
     per_intent_scores = [
