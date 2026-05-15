@@ -41,14 +41,18 @@ logger = logging.getLogger(__name__)
 
 def _get_llm():
     """Load Groq LLM client (free tier — llama3-8b-8192)."""
+    from config import GROQ_API_KEY
     model = MODELS.get("research", "llama3-8b-8192")
+
+    if not GROQ_API_KEY:
+        raise RuntimeError(
+            "GROQ_API_KEY is not set. Add it to your .env file. "
+            "Get a free key at https://console.groq.com"
+        )
 
     try:
         from langchain_groq import ChatGroq
-        from config import GROQ_API_KEY
-        if GROQ_API_KEY:
-            return ChatGroq(model=model, temperature=0)
-        raise RuntimeError("GROQ_API_KEY is not set in your .env file.")
+        return ChatGroq(model=model, temperature=0)
     except ImportError:
         raise RuntimeError(
             "langchain-groq is not installed. Run: pip install langchain-groq"

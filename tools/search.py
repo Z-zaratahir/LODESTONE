@@ -289,7 +289,9 @@ async def _search_all_async(
     Run all intent searches in parallel using asyncio.
     Each search is run in a thread (Tavily client is sync) via run_in_executor.
     """
-    loop = asyncio.get_event_loop()
+    # Use get_running_loop() — correct for Python 3.10+ inside an async function.
+    # get_event_loop() is deprecated in async contexts from Python 3.10 onward.
+    loop = asyncio.get_running_loop()
 
     tasks = [
         loop.run_in_executor(
@@ -359,19 +361,16 @@ def run_research(
         intents = RESEARCH_INTENTS
         logger.info("search: no intents specified, defaulting to all")
 
-    # Run async in a new event loop (safe to call from sync LangGraph node)
+    # Always create a fresh event loop — avoids DeprecationWarning from
+    # asyncio.get_event_loop() on Python 3.12 and RuntimeError when called
+    # from a non-main thread (which LangGraph nodes may run in).
+    loop = asyncio.new_event_loop()
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_closed():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-    results = loop.run_until_complete(
-        _search_all_async(company, intents, extra_context)
-    )
+        results = loop.run_until_complete(
+            _search_all_async(company, intents, extra_context)
+        )
+    finally:
+        loop.close()
 
     # Overall confidence: average of per-intent scores
     per_intent_scores = [

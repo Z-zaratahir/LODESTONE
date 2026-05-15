@@ -114,6 +114,13 @@ class AgentState(TypedDict):
     # Optional free-text from Validator explaining what's missing.
     # Research Agent reads this on retry to target the gap.
 
+    # ── INTERNAL PIPELINE STATE ───────────────────────────────────────────────
+    _research_summary: dict
+    # Structured output from the Research Agent's LLM assembly step.
+    # Fields: intent_summaries, key_facts, data_gaps, source_urls.
+    # Read by the Validator Agent and Synthesis Agent.
+    # Not shown to the user directly.
+
     # ── SYNTHESIS AGENT OUTPUT ────────────────────────────────────────────────
     final_response: str
     # The fully structured answer returned to the user.
