@@ -14,10 +14,8 @@ load_dotenv()
 
 # ── API KEYS ──────────────────────────────────────────────────────────────────
 
-TAVILY_API_KEY   = os.getenv("TAVILY_API_KEY", "")
-OPENAI_API_KEY   = os.getenv("OPENAI_API_KEY", "")       # if using OpenAI
-GROQ_API_KEY     = os.getenv("GROQ_API_KEY", "")         # if using Groq (free, fast)
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")   # if using Claude
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")   # Tavily — free tier (1 000 searches/month)
+GROQ_API_KEY   = os.getenv("GROQ_API_KEY", "")     # Groq   — free tier, fast inference
 
 
 # ── MODEL SELECTION ───────────────────────────────────────────────────────────
@@ -37,10 +35,10 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")   # if using Claude
 
 MODELS = {
     # Primary reasoning model — used by Clarity, Validator, Synthesis agents
-    # Options: "gpt-4o-mini", "claude-3-haiku-20240307", "llama3-8b-8192" (Groq)
-    "primary": "llama3-8b-8192",          # Groq is free-tier and very fast
+    # Using Groq's free-tier llama3-8b-8192 — no credit card required
+    "primary": "llama3-8b-8192",
 
-    # Research agent model — needs strong instruction following for parallel tasks
+    # Research agent model — same free Groq model
     "research": "llama3-8b-8192",
 
     # Normalization — HuggingFace model, runs locally, no API cost

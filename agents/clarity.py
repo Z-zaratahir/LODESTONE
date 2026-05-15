@@ -37,8 +37,8 @@ logger = logging.getLogger(__name__)
 
 def _get_llm():
     """
-    Lazy-load the LLM client based on config.
-    Tries Groq first (free, fast), falls back to OpenAI, then Anthropic.
+    Load Groq LLM client (free tier — no credit card required).
+    Model: llama3-8b-8192 via api.groq.com
     """
     model = MODELS.get("primary", "llama3-8b-8192")
 
@@ -48,31 +48,11 @@ def _get_llm():
         if GROQ_API_KEY:
             logger.debug(f"clarity: using Groq model '{model}'")
             return ChatGroq(model=model, temperature=0)
-    except (ImportError, Exception) as e:
-        logger.debug(f"clarity: Groq unavailable — {e}")
-
-    try:
-        from langchain_openai import ChatOpenAI
-        from config import OPENAI_API_KEY
-        if OPENAI_API_KEY:
-            logger.debug("clarity: falling back to OpenAI gpt-4o-mini")
-            return ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    except (ImportError, Exception) as e:
-        logger.debug(f"clarity: OpenAI unavailable — {e}")
-
-    try:
-        from langchain_anthropic import ChatAnthropic
-        from config import ANTHROPIC_API_KEY
-        if ANTHROPIC_API_KEY:
-            logger.debug("clarity: falling back to Anthropic claude-haiku")
-            return ChatAnthropic(model="claude-haiku-20240307", temperature=0)
-    except (ImportError, Exception) as e:
-        logger.debug(f"clarity: Anthropic unavailable — {e}")
-
-    raise RuntimeError(
-        "No LLM provider available. Set GROQ_API_KEY, OPENAI_API_KEY, or "
-        "ANTHROPIC_API_KEY in your .env file."
-    )
+        raise RuntimeError("GROQ_API_KEY is not set in your .env file.")
+    except ImportError:
+        raise RuntimeError(
+            "langchain-groq is not installed. Run: pip install langchain-groq"
+        )
 
 
 def run_clarity_agent(state: AgentState) -> dict[str, Any]:
